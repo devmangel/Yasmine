@@ -2,22 +2,22 @@ package data_structures
 
 import "sync"
 
-// List representa una lista enlazada doblemente segura para concurrencia.
-type List struct {
-    head *Node
-    tail *Node
-    size int
-    lock sync.RWMutex
-}
-
 // Node representa un nodo en la lista enlazada.
 type Node struct {
-    value interface{}
+    Value interface{}
     prev  *Node
     next  *Node
 }
 
-// NewList crea una nueva instancia de List.
+// List representa una lista doblemente enlazada.
+type List struct {
+    Head *Node  // Exportado
+    Tail *Node  // Exportado
+    size int
+    lock sync.RWMutex
+}
+
+// NewList crea una nueva lista vacía.
 func NewList() *List {
     return &List{}
 }
@@ -28,16 +28,16 @@ func (l *List) Append(value interface{}) {
     defer l.lock.Unlock()
 
     newNode := &Node{
-        value: value,
+        Value: value,
     }
 
-    if l.tail == nil {
-        l.head = newNode
-        l.tail = newNode
+    if l.Tail == nil {
+        l.Head = newNode
+        l.Tail = newNode
     } else {
-        newNode.prev = l.tail
-        l.tail.next = newNode
-        l.tail = newNode
+        newNode.prev = l.Tail
+        l.Tail.next = newNode
+        l.Tail = newNode
     }
     l.size++
 }
@@ -48,16 +48,16 @@ func (l *List) Prepend(value interface{}) {
     defer l.lock.Unlock()
 
     newNode := &Node{
-        value: value,
+        Value: value,
     }
 
-    if l.head == nil {
-        l.head = newNode
-        l.tail = newNode
+    if l.Head == nil {
+        l.Head = newNode
+        l.Tail = newNode
     } else {
-        newNode.next = l.head
-        l.head.prev = newNode
-        l.head = newNode
+        newNode.next = l.Head
+        l.Head.prev = newNode
+        l.Head = newNode
     }
     l.size++
 }
@@ -70,13 +70,13 @@ func (l *List) Remove(node *Node) {
     if node.prev != nil {
         node.prev.next = node.next
     } else {
-        l.head = node.next
+        l.Head = node.next
     }
 
     if node.next != nil {
         node.next.prev = node.prev
     } else {
-        l.tail = node.prev
+        l.Tail = node.prev
     }
 
     l.size--
@@ -94,9 +94,9 @@ func (l *List) Find(value interface{}) *Node {
     l.lock.RLock()
     defer l.lock.RUnlock()
 
-    current := l.head
+    current := l.Head
     for current != nil {
-        if current.value == value {
+        if current.Value == value {
             return current
         }
         current = current.next

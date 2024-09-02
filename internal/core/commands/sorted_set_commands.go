@@ -28,7 +28,7 @@ func (cmd *ZAddCommand) Execute(args ...interface{}) (interface{}, error) {
     }
 
     member := args[1]
-    cmd.sortedSet.Add(score, member)
+    cmd.sortedSet.Add(member, score)
 
     return "OK", nil
 }

@@ -70,7 +70,7 @@ func (cmd *LPopCommand) Execute(args ...interface{}) (interface{}, error) {
         return nil, nil
     }
 
-    firstNode := cmd.list.head
+    firstNode := cmd.list.Head
     cmd.list.Remove(firstNode)
     return firstNode.Value, nil
 }
@@ -95,7 +95,7 @@ func (cmd *RPopCommand) Execute(args ...interface{}) (interface{}, error) {
         return nil, nil
     }
 
-    lastNode := cmd.list.tail
+    lastNode := cmd.list.Tail
     cmd.list.Remove(lastNode)
     return lastNode.Value, nil
 }

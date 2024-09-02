@@ -1,82 +1,85 @@
 package data_structures
 
-import (
-    "sort"
-    "sync"
-)
-
-// SortedSet representa un conjunto de elementos únicos que están ordenados.
+// SortedSet representa un conjunto ordenado donde cada elemento tiene una puntuación asociada.
 type SortedSet struct {
-    elements []interface{}
+    items      map[interface{}]float64
     comparator func(a, b interface{}) bool
-    lock sync.RWMutex
 }
 
 // NewSortedSet crea una nueva instancia de SortedSet.
-// El comparator es una función que define el orden de los elementos.
 func NewSortedSet(comparator func(a, b interface{}) bool) *SortedSet {
     return &SortedSet{
-        elements: []interface{}{},
+        items:      make(map[interface{}]float64),
         comparator: comparator,
     }
 }
 
-// Add añade un elemento al conjunto ordenado.
-// La función inserta el elemento en la posición correcta para mantener el orden.
-func (s *SortedSet) Add(item interface{}) {
-    s.lock.Lock()
-    defer s.lock.Unlock()
-
-    idx := sort.Search(len(s.elements), func(i int) bool {
-        return s.comparator(item, s.elements[i])
-    })
-
-    if idx < len(s.elements) && s.elements[idx] == item {
-        return // El elemento ya está presente
-    }
-
-    s.elements = append(s.elements[:idx], append([]interface{}{item}, s.elements[idx:]...)...)
+// Add añade un nuevo elemento con su puntuación al conjunto ordenado.
+func (ss *SortedSet) Add(value interface{}, score float64) {
+    ss.items[value] = score
 }
 
 // Remove elimina un elemento del conjunto ordenado.
-func (s *SortedSet) Remove(item interface{}) {
-    s.lock.Lock()
-    defer s.lock.Unlock()
+func (ss *SortedSet) Remove(value interface{}) {
+    delete(ss.items, value)
+}
 
-    idx := sort.Search(len(s.elements), func(i int) bool {
-        return s.elements[i] == item
-    })
-
-    if idx < len(s.elements) && s.elements[idx] == item {
-        s.elements = append(s.elements[:idx], s.elements[idx+1:]...)
+// Range devuelve un slice de elementos en un rango específico.
+func (ss *SortedSet) Range(start, end int) []interface{} {
+    var result []interface{}
+    
+    for value := range ss.items {
+        result = append(result, value)
     }
+
+    // Ordenar los resultados usando el comparador proporcionado
+    sortedResult := ss.sort(result)
+    
+    // Manejo de límites del rango
+    if start < 0 {
+        start = 0
+    }
+    if end > len(sortedResult) {
+        end = len(sortedResult)
+    }
+
+    return sortedResult[start:end]
 }
 
-// Contains verifica si un elemento está en el conjunto ordenado.
-func (s *SortedSet) Contains(item interface{}) bool {
-    s.lock.RLock()
-    defer s.lock.RUnlock()
-
-    idx := sort.Search(len(s.elements), func(i int) bool {
-        return s.elements[i] == item
-    })
-
-    return idx < len(s.elements) && s.elements[idx] == item
+// Score devuelve la puntuación de un elemento en el conjunto ordenado.
+func (ss *SortedSet) Score(value interface{}) (float64, bool) {
+    score, exists := ss.items[value]
+    return score, exists
 }
 
-// Len devuelve la cantidad de elementos en el conjunto ordenado.
-func (s *SortedSet) Len() int {
-    s.lock.RLock()
-    defer s.lock.RUnlock()
-    return len(s.elements)
-}
+// Método auxiliar para ordenar los resultados.
+func (ss *SortedSet) sort(values []interface{}) []interface{} {
+    // Convertir el mapa en un slice de pares (valor, puntuación) para ordenarlo
+    type pair struct {
+        value interface{}
+        score float64
+    }
 
-// Items devuelve todos los elementos en el conjunto ordenado.
-func (s *SortedSet) Items() []interface{} {
-    s.lock.RLock()
-    defer s.lock.RUnlock()
+    pairs := make([]pair, 0, len(values))
+    for _, value := range values {
+        score := ss.items[value]
+        pairs = append(pairs, pair{value, score})
+    }
 
-    items := make([]interface{}, len(s.elements))
-    copy(items, s.elements)
-    return items
+    // Ordenar los pares según la puntuación utilizando el comparador
+    for i := 0; i < len(pairs); i++ {
+        for j := i + 1; j < len(pairs); j++ {
+            if !ss.comparator(pairs[i].score, pairs[j].score) {
+                pairs[i], pairs[j] = pairs[j], pairs[i]
+            }
+        }
+    }
+
+    // Extraer los valores ordenados
+    sortedValues := make([]interface{}, len(pairs))
+    for i, p := range pairs {
+        sortedValues[i] = p.value
+    }
+
+    return sortedValues
 }

@@ -1,5 +1,7 @@
 package commands
 
+import "errors"
+
 // Command es una interfaz que todos los comandos deben implementar.
 type Command interface {
     Execute(args ...interface{}) (interface{}, error)
@@ -20,3 +22,6 @@ func (bc *BaseCommand) Name() string {
 func (bc *BaseCommand) Execute(args ...interface{}) (interface{}, error) {
     return nil, nil
 }
+
+// ErrInvalidArguments se devuelve cuando los argumentos pasados a un comando no son válidos.
+var ErrInvalidArguments = errors.New("invalid arguments provided")

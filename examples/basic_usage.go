@@ -16,11 +16,11 @@ func main() {
     getCmd := commands.NewGetStringCommand(ht)
 
     // Establecer un valor en la tabla hash
-    setCmd.Execute("key1", "value1")
+    setCmd.Execute("Miguel", "30")
 
     // Recuperar el valor de la tabla hash
-    value, _ := getCmd.Execute("key1")
-    fmt.Printf("GET key1: %s\n", value)
+    value, _ := getCmd.Execute("Miguel")
+    fmt.Printf("GET Miguel: %s\n", value)
 
     // Mostrar el valor esperado
     // Output: GET key1: value1
